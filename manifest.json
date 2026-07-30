@@ -1,6 +1,6 @@
 {
-  "name": "SITE NAME — Digital Dip Calculator",
-  "short_name": "Digital Dip Calcu",
+  "name": "SITE NAME — Fuel Dip Calculator",
+  "short_name": "Fuel Dip",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#F8FAFC",
