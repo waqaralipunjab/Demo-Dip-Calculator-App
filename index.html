@@ -8,7 +8,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json?v=26">
+<link rel="manifest" href="manifest.json?v=31.2.0">
 <meta name="theme-color" content="#2563EB">
 <link rel="icon" href="icon-192.png" id="faviconLink">
 <link rel="apple-touch-icon" href="apple-touch-icon.png" id="appleIconLink">
@@ -445,6 +445,11 @@
       <p class="plate-address" id="plateAddress" style="display:none;"></p>
       <p class="plate-tagline" data-i18n="home.tagline">Fuel Dip Calculator</p>
       <div class="plate-clock" id="clock">—</div>
+      <div class="app-download-actions" aria-label="App installation options">
+        <button type="button" class="app-action-btn app-install-btn" id="pwaInstallBtn" onclick="installPWA()">📲 Install App</button>
+        <button type="button" class="app-action-btn app-apk-btn" id="apkDownloadBtn" onclick="downloadAndroidAPK()">⬇️ Download Android APK</button>
+      </div>
+      <p class="app-install-help" id="appInstallHelp" role="status" aria-live="polite">Install this app on your device, or download the Android APK.</p>
     </div>
   </header>
 
@@ -993,5 +998,6 @@
 
 <script src="tank1.js"></script>
 <script src="script.js"></script>
+<script src="pwa-install.js?v=31.2.0"></script>
 </body>
 </html>

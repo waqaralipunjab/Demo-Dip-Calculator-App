@@ -2792,3 +2792,14 @@ body.view-desktop .tanks-single{
   margin-bottom: 16px;
 }
 .site-info-capacity strong{ color: var(--primary-dark); }
+
+
+/* ---------- PWA and Android APK actions ---------- */
+.app-download-actions{display:flex;flex-wrap:wrap;gap:10px;margin-top:18px;text-shadow:none}
+.app-action-btn{appearance:none;border:1px solid rgba(255,255,255,.42);border-radius:12px;padding:11px 15px;min-height:44px;font:700 14px/1.2 Inter,system-ui,sans-serif;cursor:pointer;transition:transform .15s ease,filter .15s ease;box-shadow:0 4px 12px rgba(0,0,0,.12)}
+.app-action-btn:hover{filter:brightness(1.05);transform:translateY(-1px)}
+.app-action-btn:focus-visible{outline:3px solid #fff;outline-offset:3px}
+.app-install-btn{background:#fff;color:#12306a}
+.app-apk-btn{background:rgba(8,24,60,.35);color:#fff}
+.app-install-help{font-size:12px;line-height:1.5;margin:9px 0 0;color:rgba(255,255,255,.9);text-shadow:none}
+@media(max-width:480px){.app-download-actions{display:grid;grid-template-columns:1fr}.app-action-btn{width:100%}.plate{padding:22px 18px}}
