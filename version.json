@@ -1,9 +1,11 @@
 {
-  "version": "31.3.0",
+  "version": "31.4.0",
   "releaseDate": "2026-10-11",
   "releaseNotes": [
-    "Added safe PWA update notification",
-    "Added Update Now and Later actions",
-    "Preserves customer data stored in browser localStorage"
+    "Added per-device tank display name setting below site name and address",
+    "Dip chart now displays site name, address and tank name",
+    "Added one-tap dip chart image sharing/download",
+    "Added dip chart PDF sharing/download",
+    "Preserved local customer settings and PWA update notification"
   ]
 }

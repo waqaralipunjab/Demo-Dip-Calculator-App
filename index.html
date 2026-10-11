@@ -166,6 +166,14 @@
         <div id="siteDetailsMsg" class="pin-setup-msg"></div>
         <button type="button" class="save-btn" onclick="saveSiteDetails()" data-i18n="common.save">Save</button>
       </div>
+      <div class="pin-setup" style="display:flex;margin-top:12px;">
+        <label class="field">
+          <span class="field-label">🛢️ Tank 1 Display Name</span>
+          <input id="tank1NameInput" class="settings-input" type="text" maxlength="60" autocomplete="off" placeholder="e.g. Petrol Tank - 1">
+        </label>
+        <div id="tankNamesMsg" class="pin-setup-msg" role="status" aria-live="polite"></div>
+        <button type="button" class="save-btn" onclick="saveTankNames()">💾 Save Tank Name</button>
+      </div>
     </div>
 
     <div class="modal-row">
@@ -227,6 +235,38 @@
       </div>
       <input type="file" id="restoreFileInput" accept=".json,application/json" style="display:none;" onchange="restoreBackupFile(this)">
       <div class="modal-row-sub">Backup file mein aapki poori history, settings aur PIN shamil hote hain. Ise Google Drive, WhatsApp ya Email kar ke mehfooz rakhein.<br><strong>⚠️ Aapka data sirf isi device/browser par save hota hai. Ise regularly backup/export karna aapki apni zimmedari hai — developer data loss ka zimmedar nahi hoga.</strong></div>
+    </div>
+
+    <!-- Splash screen customization (saved per device/customer) -->
+    <div class="modal-row modal-row-stack" id="splashSettingsSection">
+      <div>
+        <div class="modal-row-title">🖼️ Splash Screen Settings</div>
+        <div class="modal-row-sub">Customize the opening screen on this device. These settings are saved locally for this customer.</div>
+      </div>
+      <label class="field">
+        <span class="field-label">Splash screen duration</span>
+        <select id="splashDurationSelect" class="scheme-select">
+          <option value="1">1 second</option>
+          <option value="2">2 seconds</option>
+          <option value="3">3 seconds</option>
+          <option value="5">5 seconds</option>
+          <option value="7">7 seconds</option>
+          <option value="10">10 seconds</option>
+        </select>
+      </label>
+      <label class="field">
+        <span class="field-label">Choose splash screen image</span>
+        <input id="splashImageInput" class="settings-input" type="file" accept="image/png,image/jpeg,image/webp,image/gif">
+      </label>
+      <div class="splash-settings-preview-wrap">
+        <img id="splashSettingsPreview" class="splash-settings-preview" src="bismillah.jpg" alt="Splash screen preview">
+      </div>
+      <div class="backup-restore-grid">
+        <button type="button" class="save-btn" onclick="saveSplashSettings()">💾 Save Splash Settings</button>
+        <button type="button" class="save-btn save-btn-secondary" onclick="resetSplashSettings()">↩ Reset to Default</button>
+      </div>
+      <div class="pin-setup-msg" id="splashSettingsMsg" role="status" aria-live="polite"></div>
+      <div class="modal-row-sub">Image is stored on this device only (maximum 2 MB). Changing these options does not affect other customers' settings.</div>
     </div>
 
     <button type="button" class="modal-row modal-row-link" onclick="closeSettings();openAbout();">
@@ -672,6 +712,15 @@
       <span class="chart-title" data-i18n="chart.title">📋 Dip Calibration Chart</span>
       <span class="chart-note" data-i18n="chart.note">Full reference table</span>
     </div>
+    <div id="chartSiteDetails" class="reports-site-header" style="margin:8px 0;">
+      <div class="reports-site-name" id="chartSiteName"></div>
+      <div class="reports-site-address" id="chartSiteAddress"></div>
+      <div class="reports-site-address" id="chartTankName"></div>
+    </div>
+    <div class="chart-share-actions" style="display:flex;gap:8px;flex-wrap:wrap;margin:10px 0;">
+      <button type="button" class="save-btn" onclick="shareDipChartImage()">🖼️ Share Chart Image</button>
+      <button type="button" class="save-btn save-btn-secondary" onclick="shareDipChartPDF()">📄 Share / Download PDF</button>
+    </div>
 
     <div class="chart-search">
       <div class="chart-search-toggle">
@@ -1002,6 +1051,7 @@
 </nav>
 
 <script src="tank1.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 <script src="script.js"></script>
 <script src="pwa-install.js?v=31.3.0"></script>
 </body>

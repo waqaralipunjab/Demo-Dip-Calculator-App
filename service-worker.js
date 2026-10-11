@@ -1,4 +1,4 @@
-const CACHE_NAME = 'demo-dip-calculator-v31-3-0';
+const CACHE_NAME = 'demo-dip-calculator-v31-4-0';
 const CACHE_PREFIX = 'demo-dip-calculator-';
 const APP_SHELL = [
   './', './index.html', './style.css', './script.js', './tank1.js',

@@ -2803,3 +2803,8 @@ body.view-desktop .tanks-single{
 .app-apk-btn{background:rgba(8,24,60,.35);color:#fff}
 .app-install-help{font-size:12px;line-height:1.5;margin:9px 0 0;color:rgba(255,255,255,.9);text-shadow:none}
 @media(max-width:480px){.app-download-actions{display:grid;grid-template-columns:1fr}.app-action-btn{width:100%}.plate{padding:22px 18px}}
+
+/* Splash screen settings preview */
+.splash-settings-preview-wrap{display:flex;justify-content:center;align-items:center;padding:10px;border:1px solid var(--border-color, #d1d5db);border-radius:12px;background:rgba(127,127,127,.06);}
+.splash-settings-preview{display:block;max-width:180px;max-height:180px;object-fit:contain;border-radius:8px;}
+#splashImageInput{padding:10px;}

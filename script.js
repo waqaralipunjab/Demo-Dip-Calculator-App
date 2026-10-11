@@ -68,6 +68,9 @@ function onTimeFormatChange(value){
 })();
 const SITE_NAME_KEY='demoFuelDipSiteName';
 const SITE_ADDRESS_KEY='demoFuelDipSiteAddress';
+const TANK1_NAME_KEY='demoFuelDipTank1DisplayName';
+function getTankDisplayName(tankId){try{if(tankId==='t1')return localStorage.getItem(TANK1_NAME_KEY)||'Tank 1';}catch(e){}return 'Tank 1';}
+function applyTankDisplayNames(){const name=getTankDisplayName('t1');if(CHART_TANKS.t1)CHART_TANKS.t1.label=name;const el=document.getElementById('chartTankName');if(el)el.textContent='Tank: '+name;const site=getSiteDetails();const sn=document.getElementById('chartSiteName');const sa=document.getElementById('chartSiteAddress');if(sn)sn.textContent=site.name||'';if(sa)sa.textContent=site.address||'';const toggle=document.querySelector('.chart-tank-toggle [data-tank="t1"]');if(toggle)toggle.textContent=name;}
 const DEFAULT_SITE_NAME='Demo Application';
 function getSiteName(){
   try{ return localStorage.getItem(SITE_NAME_KEY)||DEFAULT_SITE_NAME; }catch(e){ return DEFAULT_SITE_NAME; }
@@ -1115,6 +1118,7 @@ function loadSiteDetailsIntoSettings(){
   const nameEl=document.getElementById('customerNameDisplay');
   nameInput.value=savedName || (nameEl ? nameEl.textContent.trim() : '');
   addrInput.value=savedAddress;
+  const tankNameInput=document.getElementById('tank1NameInput');if(tankNameInput){try{tankNameInput.value=localStorage.getItem(TANK1_NAME_KEY)||'Tank 1';}catch(e){tankNameInput.value='Tank 1';}}
 
   const msg=document.getElementById('siteDetailsMsg');
   if(msg){ msg.innerText=''; msg.className='pin-setup-msg'; }
@@ -1142,9 +1146,64 @@ function saveSiteDetails(){
   applySiteDetails();
   msg.innerText='Site details save ho gayi.';
   msg.className='pin-setup-msg ok';
+  applyTankDisplayNames();
 }
+function saveTankNames(){const input=document.getElementById('tank1NameInput');const msg=document.getElementById('tankNamesMsg');const name=(input&&input.value.trim())||'';if(!name){if(msg){msg.textContent='Tank name khali nahi ho sakta.';msg.className='pin-setup-msg err';}return;}try{localStorage.setItem(TANK1_NAME_KEY,name);}catch(e){if(msg){msg.textContent='Could not save tank name on this device.';msg.className='pin-setup-msg err';}return;}applyTankDisplayNames();if(msg){msg.textContent='Tank name saved on this device.';msg.className='pin-setup-msg ok';}}
 
-/* ---------- Bismillah splash screen ---------- */
+/* ---------- Bismillah splash screen + per-customer settings ---------- */
+const SPLASH_DURATION_KEY='demoFuelDipSplashDuration';
+const SPLASH_IMAGE_KEY='demoFuelDipSplashImage';
+const DEFAULT_SPLASH_DURATION=5;
+let splashHideTimer=null;
+function getSplashDuration(){
+  try{const n=parseInt(localStorage.getItem(SPLASH_DURATION_KEY)||String(DEFAULT_SPLASH_DURATION),10);return [1,2,3,5,7,10].includes(n)?n:DEFAULT_SPLASH_DURATION;}catch(e){return DEFAULT_SPLASH_DURATION;}
+}
+function applySplashSettings(){
+  const splash=document.getElementById('splashScreen');
+  const img=splash?splash.querySelector('.splash-img'):null;
+  let savedImage='';
+  try{savedImage=localStorage.getItem(SPLASH_IMAGE_KEY)||'';}catch(e){}
+  if(img) img.src=savedImage||'bismillah.jpg';
+  const duration=document.getElementById('splashDurationSelect');
+  if(duration) duration.value=String(getSplashDuration());
+  const preview=document.getElementById('splashSettingsPreview');
+  if(preview) preview.src=savedImage||'bismillah.jpg';
+}
+function previewSplashImage(input){
+  const file=input&&input.files&&input.files[0];
+  const msg=document.getElementById('splashSettingsMsg');
+  if(!file)return;
+  if(!/^image\/(png|jpeg|webp|gif)$/.test(file.type)){if(msg)msg.textContent='Please choose a PNG, JPG, WEBP or GIF image.';input.value='';return;}
+  if(file.size>2*1024*1024){if(msg)msg.textContent='Image is too large. Please choose an image under 2 MB.';input.value='';return;}
+  const reader=new FileReader();
+  reader.onload=function(){const preview=document.getElementById('splashSettingsPreview');if(preview)preview.src=reader.result;if(msg)msg.textContent='Preview ready. Tap Save Splash Settings to apply it.';};
+  reader.onerror=function(){if(msg)msg.textContent='Could not read this image. Please try another file.';};
+  reader.readAsDataURL(file);
+}
+function saveSplashSettings(){
+  const durationEl=document.getElementById('splashDurationSelect');
+  const input=document.getElementById('splashImageInput');
+  const msg=document.getElementById('splashSettingsMsg');
+  const file=input&&input.files&&input.files[0];
+  const saveImage=function(data){
+    try{
+      localStorage.setItem(SPLASH_DURATION_KEY,String(parseInt(durationEl.value,10)||DEFAULT_SPLASH_DURATION));
+      if(data!==null){if(data)localStorage.setItem(SPLASH_IMAGE_KEY,data);else localStorage.removeItem(SPLASH_IMAGE_KEY);}
+      applySplashSettings();
+      if(msg)msg.textContent='Splash screen settings saved on this device.';
+    }catch(e){if(msg)msg.textContent='Could not save settings. Try a smaller image or reset the image to default.';}
+  };
+  if(file){
+    if(file.size>2*1024*1024){if(msg)msg.textContent='Image is too large. Please choose an image under 2 MB.';return;}
+    const reader=new FileReader();reader.onload=function(){saveImage(String(reader.result||''));};reader.onerror=function(){if(msg)msg.textContent='Could not read this image.';};reader.readAsDataURL(file);
+  }else saveImage(null);
+}
+function resetSplashSettings(){
+  try{localStorage.removeItem(SPLASH_DURATION_KEY);localStorage.removeItem(SPLASH_IMAGE_KEY);}catch(e){}
+  const input=document.getElementById('splashImageInput');if(input)input.value='';
+  applySplashSettings();
+  const msg=document.getElementById('splashSettingsMsg');if(msg)msg.textContent='Default splash image and 5-second duration restored.';
+}
 function hideSplashAndReveal(){
   const splash=document.getElementById('splashScreen');
   applySiteDetails();
@@ -1153,11 +1212,14 @@ function hideSplashAndReveal(){
   splash.classList.add('splash-hide');
   setTimeout(function(){ splash.style.display='none'; },650);
 }
+const splashInput=document.getElementById('splashImageInput');
+if(splashInput)splashInput.addEventListener('change',function(){previewSplashImage(this);});
 applySiteDetails();
-setTimeout(hideSplashAndReveal,4800);
+applySplashSettings();
+splashHideTimer=setTimeout(hideSplashAndReveal,getSplashDuration()*1000);
 
 /* ---------- Dip Chart page (multi-tank calibration reference table) ---------- */
-const CHART_TANKS={ t1:{data:tank1,label:'Tank 1'} };
+const CHART_TANKS={ t1:{data:tank1,label:getTankDisplayName('t1')} };
 let chartActiveTank='t1';
 let chartSearchMode='mm';
 
@@ -1204,6 +1266,7 @@ function setChartTank(tankId){
   });
 
   renderChartTable(CHART_TANKS[tankId].data,'chartTableWrap',2);
+  applyTankDisplayNames();
   document.getElementById('chartSearchInput').value='';
   document.getElementById('chartSearchResult').innerHTML='';
   clearChartHighlight();
@@ -1293,7 +1356,13 @@ function clearChartHighlight(){
   });
 }
 
+function getDipChartExportNode(){const wrap=document.getElementById('chartTableWrap');if(!wrap)return null;const box=document.createElement('div');box.style.cssText='background:#fff;color:#111;padding:24px;width:1000px;font-family:Arial,sans-serif;';const site=getSiteDetails();box.innerHTML='<h2 style="margin:0 0 8px;text-align:center;">'+escapeChartText(site.name||'Fuel Dip Calculator')+'</h2>'+(site.address?'<p style="text-align:center;margin:0 0 8px;">'+escapeChartText(site.address)+'</p>':'')+'<h3 style="text-align:center;margin:0 0 16px;">Dip Calibration Chart — '+escapeChartText(getTankDisplayName(chartActiveTank))+'</h3>';box.appendChild(wrap.querySelector('table').cloneNode(true));return box;}
+function escapeChartText(value){return String(value||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
+async function shareDipChartImage(){const node=getDipChartExportNode();if(!node){alert('Dip chart is not ready.');return;}if(!window.html2canvas){alert('Image export needs an internet connection the first time.');return;}document.body.appendChild(node);try{const canvas=await html2canvas(node,{backgroundColor:'#ffffff',scale:2});canvas.toBlob(async function(blob){if(!blob)return;const filename='dip-chart-'+getTankDisplayName(chartActiveTank).replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.png';if(navigator.share&&navigator.canShare){try{const file=new File([blob],filename,{type:'image/png'});if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Fuel Dip Chart'});return;}}catch(e){}}const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);},'image/png');}catch(e){alert('Could not create chart image. Please try again.');}finally{node.remove();}}
+function shareDipChartPDF(){if(!window.jspdf||!window.jspdf.jsPDF){alert('PDF export needs an internet connection to load the PDF library.');return;}const data=CHART_TANKS[chartActiveTank].data;const site=getSiteDetails();const doc=new window.jspdf.jsPDF({orientation:'landscape'});let y=15;doc.setFontSize(16);doc.text(site.name||'Fuel Dip Calculator',148,y,{align:'center'});y+=8;doc.setFontSize(10);if(site.address){doc.text(site.address,148,y,{align:'center'});y+=7;}doc.setFontSize(13);doc.text('Dip Calibration Chart — '+getTankDisplayName(chartActiveTank),148,y,{align:'center'});const rows=data.map(p=>[String(p[0]),Number(p[1]).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})]);doc.autoTable({startY:y+6,head:[['Fill (mm)','Volume (L)']],body:rows,styles:{fontSize:8,cellPadding:1.5},headStyles:{fillColor:[31,78,121]}});const blob=doc.output('blob');const filename='dip-chart-'+getTankDisplayName(chartActiveTank).replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.pdf';shareOrDownloadBlob(blob,filename,'application/pdf');}
+
 renderChartTable(tank1,'chartTableWrap',2);
+applyTankDisplayNames();
 
 /* ---------- Copy Result to clipboard ---------- */
 function copyResult(dipId, valueId, noteId, btnId, tankLabel){
