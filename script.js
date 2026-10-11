@@ -70,7 +70,29 @@ const SITE_NAME_KEY='demoFuelDipSiteName';
 const SITE_ADDRESS_KEY='demoFuelDipSiteAddress';
 const TANK1_NAME_KEY='demoFuelDipTank1DisplayName';
 function getTankDisplayName(tankId){try{if(tankId==='t1')return localStorage.getItem(TANK1_NAME_KEY)||'Tank 1';}catch(e){}return 'Tank 1';}
-function applyTankDisplayNames(){const name=getTankDisplayName('t1');if(CHART_TANKS.t1)CHART_TANKS.t1.label=name;const el=document.getElementById('chartTankName');if(el)el.textContent='Tank: '+name;const site=getSiteDetails();const sn=document.getElementById('chartSiteName');const sa=document.getElementById('chartSiteAddress');if(sn)sn.textContent=site.name||'';if(sa)sa.textContent=site.address||'';const toggle=document.querySelector('.chart-tank-toggle [data-tank="t1"]');if(toggle)toggle.textContent=name;}
+function applyTankDisplayNames(){
+  const name=getTankDisplayName('t1');
+  if(CHART_TANKS.t1) CHART_TANKS.t1.label=name;
+  const chartName=document.getElementById('chartTankName');
+  if(chartName) chartName.textContent='Tank: '+name;
+  const site=getSiteDetails();
+  const sn=document.getElementById('chartSiteName'), sa=document.getElementById('chartSiteAddress');
+  if(sn) sn.textContent=site.name||'';
+  if(sa) sa.textContent=site.address||'';
+  const homeTag=document.getElementById('homeTankDisplayName');
+  if(homeTag) homeTag.textContent=name;
+  // Update all tank labels, selectors and cards consistently without changing saved entries.
+  document.querySelectorAll('.tank-card[data-tank="t1"] .tank-chip').forEach(el=>el.textContent='🛢 '+name);
+  document.querySelectorAll('option[value="t1"]').forEach(el=>el.textContent=name);
+  document.querySelectorAll('button[data-tank="t1"]').forEach(el=>{el.textContent=(el.classList.contains('mode-btn')?'🛢 ':'')+name;});
+  ['eu_tank','sk_tank','ul_tank','rc_tank','es_tank','editReadingTank'].forEach(id=>{
+    const sel=document.getElementById(id); if(sel) Array.from(sel.options).forEach(opt=>{if(opt.value==='t1')opt.textContent=name;});
+  });
+  // Refresh chart label and all live panels that render a tank label.
+  document.querySelectorAll('[data-tank-label="t1"]').forEach(el=>el.textContent=name);
+  if(typeof renderTankCards==='function'){try{renderTankCards();}catch(e){}}
+}
+
 const DEFAULT_SITE_NAME='Demo Application';
 function getSiteName(){
   try{ return localStorage.getItem(SITE_NAME_KEY)||DEFAULT_SITE_NAME; }catch(e){ return DEFAULT_SITE_NAME; }
@@ -1148,7 +1170,7 @@ function saveSiteDetails(){
   msg.className='pin-setup-msg ok';
   applyTankDisplayNames();
 }
-function saveTankNames(){const input=document.getElementById('tank1NameInput');const msg=document.getElementById('tankNamesMsg');const name=(input&&input.value.trim())||'';if(!name){if(msg){msg.textContent='Tank name khali nahi ho sakta.';msg.className='pin-setup-msg err';}return;}try{localStorage.setItem(TANK1_NAME_KEY,name);}catch(e){if(msg){msg.textContent='Could not save tank name on this device.';msg.className='pin-setup-msg err';}return;}applyTankDisplayNames();if(msg){msg.textContent='Tank name saved on this device.';msg.className='pin-setup-msg ok';}}
+function saveTankNames(){const input=document.getElementById('tank1NameInput');const msg=document.getElementById('tankNamesMsg');const btn=input&&input.closest('.pin-setup')?input.closest('.pin-setup').querySelector('button[onclick="saveTankNames()"]'):null;const name=(input&&input.value.trim())||'';if(!name){if(msg){msg.textContent='Tank name cannot be empty.';msg.className='pin-setup-msg err';}return;}try{localStorage.setItem(TANK1_NAME_KEY,name);}catch(e){if(msg){msg.textContent='Could not save tank name on this device.';msg.className='pin-setup-msg err';}return;}applyTankDisplayNames();if(msg){msg.textContent='✅ Tank name saved successfully on this device.';msg.className='pin-setup-msg ok';}if(btn){const old=btn.textContent;btn.textContent='✅ Saved';setTimeout(()=>btn.textContent=old,1800);}}
 
 /* ---------- Bismillah splash screen + per-customer settings ---------- */
 const SPLASH_DURATION_KEY='demoFuelDipSplashDuration';
@@ -1356,10 +1378,61 @@ function clearChartHighlight(){
   });
 }
 
-function getDipChartExportNode(){const wrap=document.getElementById('chartTableWrap');if(!wrap)return null;const box=document.createElement('div');box.style.cssText='background:#fff;color:#111;padding:24px;width:1000px;font-family:Arial,sans-serif;';const site=getSiteDetails();box.innerHTML='<h2 style="margin:0 0 8px;text-align:center;">'+escapeChartText(site.name||'Fuel Dip Calculator')+'</h2>'+(site.address?'<p style="text-align:center;margin:0 0 8px;">'+escapeChartText(site.address)+'</p>':'')+'<h3 style="text-align:center;margin:0 0 16px;">Dip Calibration Chart — '+escapeChartText(getTankDisplayName(chartActiveTank))+'</h3>';box.appendChild(wrap.querySelector('table').cloneNode(true));return box;}
+function getDipChartExportNode(){
+  const wrap=document.getElementById('chartTableWrap');
+  if(!wrap || !wrap.querySelector('table')) return null;
+  const box=document.createElement('div');
+  box.style.cssText='position:fixed;left:-12000px;top:0;background:#fff;color:#111;padding:24px;width:1000px;z-index:-1;font-family:Arial,sans-serif;';
+  const site=getSiteDetails();
+  const heading=document.createElement('div');
+  heading.innerHTML='<h2 style="margin:0 0 8px;text-align:center;"></h2><p style="text-align:center;margin:0 0 8px;"></p><h3 style="text-align:center;margin:0 0 16px;"></h3>';
+  heading.children[0].textContent=site.name||'Fuel Dip Calculator';
+  heading.children[1].textContent=site.address||'';
+  if(!site.address) heading.children[1].style.display='none';
+  heading.children[2].textContent='Dip Calibration Chart — '+getTankDisplayName(chartActiveTank);
+  box.appendChild(heading);
+  box.appendChild(wrap.querySelector('table').cloneNode(true));
+  return box;
+}
 function escapeChartText(value){return String(value||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];});}
-async function shareDipChartImage(){const node=getDipChartExportNode();if(!node){alert('Dip chart is not ready.');return;}if(!window.html2canvas){alert('Image export needs an internet connection the first time.');return;}document.body.appendChild(node);try{const canvas=await html2canvas(node,{backgroundColor:'#ffffff',scale:2});canvas.toBlob(async function(blob){if(!blob)return;const filename='dip-chart-'+getTankDisplayName(chartActiveTank).replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.png';if(navigator.share&&navigator.canShare){try{const file=new File([blob],filename,{type:'image/png'});if(navigator.canShare({files:[file]})){await navigator.share({files:[file],title:'Fuel Dip Chart'});return;}}catch(e){}}const a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=filename;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),1500);},'image/png');}catch(e){alert('Could not create chart image. Please try again.');}finally{node.remove();}}
-function shareDipChartPDF(){if(!window.jspdf||!window.jspdf.jsPDF){alert('PDF export needs an internet connection to load the PDF library.');return;}const data=CHART_TANKS[chartActiveTank].data;const site=getSiteDetails();const doc=new window.jspdf.jsPDF({orientation:'landscape'});let y=15;doc.setFontSize(16);doc.text(site.name||'Fuel Dip Calculator',148,y,{align:'center'});y+=8;doc.setFontSize(10);if(site.address){doc.text(site.address,148,y,{align:'center'});y+=7;}doc.setFontSize(13);doc.text('Dip Calibration Chart — '+getTankDisplayName(chartActiveTank),148,y,{align:'center'});const rows=data.map(p=>[String(p[0]),Number(p[1]).toLocaleString(undefined,{minimumFractionDigits:2,maximumFractionDigits:2})]);doc.autoTable({startY:y+6,head:[['Fill (mm)','Volume (L)']],body:rows,styles:{fontSize:8,cellPadding:1.5},headStyles:{fillColor:[31,78,121]}});const blob=doc.output('blob');const filename='dip-chart-'+getTankDisplayName(chartActiveTank).replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.pdf';shareOrDownloadBlob(blob,filename,'application/pdf');}
+async function shareDipChartImage(){
+  const btn=document.querySelector('.chart-share-actions button[onclick="shareDipChartImage()"]');
+  const node=getDipChartExportNode();
+  if(!node){alert('Dip chart is not ready.');return;}
+  if(!window.html2canvas){alert('Image export library is unavailable. Connect to the internet and reload the app.');return;}
+  if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent='⏳ Preparing image…';}
+  document.body.appendChild(node);
+  try{
+    const canvas=await window.html2canvas(node,{backgroundColor:'#ffffff',scale:2,useCORS:true});
+    const blob=await new Promise((resolve,reject)=>canvas.toBlob(b=>b?resolve(b):reject(new Error('PNG creation failed')),'image/png'));
+    const filename='dip-chart-'+getTankDisplayName(chartActiveTank).replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.png';
+    await shareOrDownloadBlob(blob,filename,'image/png');
+    if(btn){btn.textContent='✅ Image ready';setTimeout(()=>{if(btn){btn.textContent=btn.dataset.oldText||'🖼️ Share Chart Image';btn.disabled=false;}},1800);}
+  }catch(e){console.error(e);alert('Could not create chart image. Please try again.');}
+  finally{node.remove();if(btn){btn.disabled=false;if(btn.textContent==='⏳ Preparing image…')btn.textContent=btn.dataset.oldText||'🖼️ Share Chart Image';}}
+}
+async function shareDipChartPDF(){
+  const btn=document.querySelector('.chart-share-actions button[onclick="shareDipChartPDF()"]');
+  if(!window.jspdf||!window.jspdf.jsPDF){alert('PDF export library is unavailable. Connect to the internet and reload the app.');return;}
+  if(btn){btn.disabled=true;btn.dataset.oldText=btn.textContent;btn.textContent='⏳ Preparing PDF…';}
+  try{
+    const chart=CHART_TANKS[chartActiveTank];
+    if(!chart||!Array.isArray(chart.data)||!chart.data.length) throw new Error('Chart data unavailable');
+    const site=getSiteDetails();
+    const doc=new window.jspdf.jsPDF({orientation:'landscape'});
+    let y=15;
+    doc.setFontSize(16);doc.text(site.name||'Fuel Dip Calculator',148,y,{align:'center'});y+=8;
+    doc.setFontSize(10);if(site.address){doc.text(site.address,148,y,{align:'center'});y+=7;}
+    doc.setFontSize(13);doc.text('Dip Calibration Chart — '+getTankDisplayName(chartActiveTank),148,y,{align:'center'});
+    const rows=chart.data.map(p=>[String(p[0]),Number(p[1]).toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2})]);
+    if(typeof doc.autoTable==='function') doc.autoTable({startY:y+6,head:[['Fill (mm)','Volume (L)']],body:rows,styles:{fontSize:8,cellPadding:1.5},headStyles:{fillColor:[31,78,121]}});
+    else throw new Error('PDF table plugin unavailable');
+    const filename='dip-chart-'+getTankDisplayName(chartActiveTank).replace(/[^a-z0-9]+/gi,'-').toLowerCase()+'.pdf';
+    await shareOrDownloadBlob(doc.output('blob'),filename,'application/pdf');
+    if(btn){btn.textContent='✅ PDF ready';setTimeout(()=>{if(btn){btn.textContent=btn.dataset.oldText||'📄 Share / Download PDF';btn.disabled=false;}},1800);}
+  }catch(e){console.error(e);alert('PDF could not be generated. Please try again while online.');}
+  finally{if(btn){btn.disabled=false;if(btn.textContent==='⏳ Preparing PDF…')btn.textContent=btn.dataset.oldText||'📄 Share / Download PDF';}}
+}
 
 renderChartTable(tank1,'chartTableWrap',2);
 applyTankDisplayNames();
@@ -2726,3 +2799,6 @@ async function shareUnloadImage(){
   calcUnload();
   renderUnloadHistory();
 })();
+
+// Keep saved tank name visible in Settings and refresh labels after app startup.
+document.addEventListener('DOMContentLoaded',function(){const input=document.getElementById('tank1NameInput');if(input)input.value=getTankDisplayName('t1');applyTankDisplayNames();});

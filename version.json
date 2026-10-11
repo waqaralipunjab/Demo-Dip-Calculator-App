@@ -1,11 +1,11 @@
 {
-  "version": "31.4.0",
+  "version": "31.4.1",
   "releaseDate": "2026-10-11",
   "releaseNotes": [
-    "Added per-device tank display name setting below site name and address",
-    "Dip chart now displays site name, address and tank name",
-    "Added one-tap dip chart image sharing/download",
-    "Added dip chart PDF sharing/download",
-    "Preserved local customer settings and PWA update notification"
+    "Fixed tank display name propagation across Home, Tanks, selectors and Dip Chart",
+    "Added visible save confirmation for tank display name",
+    "Reworked dip chart image share/download to await PNG generation reliably",
+    "Reworked dip chart PDF share/download with error handling and button feedback",
+    "Preserved per-device settings and saved readings"
   ]
 }
