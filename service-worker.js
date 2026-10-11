@@ -1,27 +1,39 @@
-const CACHE_NAME = 'demo-dip-calculator-v31-2-0';
+const CACHE_NAME = 'demo-dip-calculator-v31-3-0';
+const CACHE_PREFIX = 'demo-dip-calculator-';
 const APP_SHELL = [
   './', './index.html', './style.css', './script.js', './tank1.js',
-  './manifest.json', './pwa-install.js', './icon-192.png', './icon-512.png',
-  './icon-maskable-192.png', './icon-maskable-512.png', './apple-touch-icon.png',
-  './bismillah.jpg', './dev-logo.png'
+  './manifest.json', './pwa-install.js', './version.json',
+  './icon-192.png', './icon-512.png', './icon-maskable-192.png', './icon-maskable-512.png',
+  './apple-touch-icon.png', './bismillah.jpg', './dev-logo.png'
 ];
 
 self.addEventListener('install', (event) => {
-  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)).then(() => self.skipWaiting()));
+  // Do not force an update over the customer's current session.
+  event.waitUntil(caches.open(CACHE_NAME).then((cache) => cache.addAll(APP_SHELL)));
+});
+
+self.addEventListener('message', (event) => {
+  if (event.data && event.data.type === 'SKIP_WAITING') self.skipWaiting();
 });
 
 self.addEventListener('activate', (event) => {
-  event.waitUntil(caches.keys().then((keys) => Promise.all(keys.filter((key) => key.startsWith('demo-dip-calculator-') && key !== CACHE_NAME).map((key) => caches.delete(key)))).then(() => self.clients.claim()));
+  event.waitUntil(
+    caches.keys()
+      .then((keys) => Promise.all(keys.filter((key) => key.startsWith(CACHE_PREFIX) && key !== CACHE_NAME).map((key) => caches.delete(key))))
+      .then(() => self.clients.claim())
+  );
 });
 
 self.addEventListener('fetch', (event) => {
   const request = event.request;
   if (request.method !== 'GET' || new URL(request.url).origin !== self.location.origin) return;
-  event.respondWith(fetch(request).then((response) => {
-    if (response && response.ok) {
-      const copy = response.clone();
-      caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
-    }
-    return response;
-  }).catch(() => caches.match(request).then((cached) => cached || (request.mode === 'navigate' ? caches.match('./index.html') : undefined))));
+  event.respondWith(
+    fetch(request).then((response) => {
+      if (response && response.ok) {
+        const copy = response.clone();
+        caches.open(CACHE_NAME).then((cache) => cache.put(request, copy));
+      }
+      return response;
+    }).catch(() => caches.match(request).then((cached) => cached || (request.mode === 'navigate' ? caches.match('./index.html') : undefined)))
+  );
 });

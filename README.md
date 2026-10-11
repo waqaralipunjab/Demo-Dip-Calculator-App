@@ -1,16 +1,20 @@
-Demo Dip Calculator — PWA/APK button update
-Base: live website version 31.2.0
+# Digital Fuel Dip Calculator — V31.3.0
 
-Files updated/added:
-- index.html: separate “Install App” and “Download Android APK” buttons
-- style.css: responsive button styling
-- manifest.json: root-relative PWA identity/start URL
-- pwa-install.js: install prompt handling and APK availability check
-- service-worker.js: app-shell/offline caching for same-origin files
+## What's new
+- Added an in-app PWA update notification with **Update Now** and **Later** actions.
+- Updates are applied through the service worker; no APK download is required for the installed PWA.
+- The update code does not clear or overwrite customer `localStorage` data (readings, charts, and individual settings).
+- Added `version.json` with version and release notes.
 
-IMPORTANT APK NOTE
-The APK button is intentionally safe: it checks for downloads/Demo-Dip-Calculator.apk before downloading. No APK binary was included in the supplied project, so an actual Android APK must still be built/signed and uploaded to:
-Demo-Application-Dip-Calculator/downloads/Demo-Dip-Calculator.apk
-Do not create an empty file with that name; it must be a real, signed APK.
+## Deploy to GitHub Pages
+1. Back up the existing repository and keep a customer-data backup before deployment.
+2. Upload the contents of `Demo-Application-Dip-Calculator/` to the repository's published root, preserving the existing folder structure.
+3. Wait for GitHub Pages deployment to complete, then open the app online once so the service worker can check for the new version.
+4. Existing installed PWAs should check for the update when opened online. When the new service worker is ready, the user can select **Update Now** or **Later**.
+5. Test with one device first. Confirm tank charts, readings, settings, and PIN remain intact before wider rollout.
 
-Deploy all project files to the root of the GitHub Pages repository for Demo-Dip-Calculator-App. Keep tank1.js and script.js unchanged. After deployment, test in Chrome and clear old site cache/service worker if the old UI remains.
+## Important notes
+- This is a static PWA update flow. It does not provide a remote admin panel or synchronize settings between devices.
+- Per-customer settings remain local to each device/browser.
+- PWA updates require an internet connection to download new files. Previously cached features may continue to work offline.
+- Always keep a backup of the previous release and test the deployment before asking all customers to update.

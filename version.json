@@ -1,0 +1,9 @@
+{
+  "version": "31.3.0",
+  "releaseDate": "2026-10-11",
+  "releaseNotes": [
+    "Added safe PWA update notification",
+    "Added Update Now and Later actions",
+    "Preserves customer data stored in browser localStorage"
+  ]
+}
